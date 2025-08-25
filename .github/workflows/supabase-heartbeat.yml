@@ -2,22 +2,16 @@ name: Supabase Heartbeat
 
 on:
   schedule:
-    - cron: "0 */12 * * *"   # every 12 hours (GitHub cron uses UTC)
-  workflow_dispatch:         # lets you run it manually from the Actions tab
+    - cron: "0 */12 * * *"   # every 12 hours
+  workflow_dispatch:
 
 jobs:
-  ping:
+  keep-alive:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Auth Health (no auth, quick warmup)
+      - name: Ping Supabase (pingdata)
         run: |
-          curl -fsS -i "${{ secrets.SUPABASE_URL }}/auth/v1/health" || true
-
-      - name: Ping PostgREST (DB activity - anon key)
-        run: |
-          curl -fsS -i \
+          curl -fsS \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
             -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Accept-Profile: public" \
-            -H "Prefer: count=none" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/${{ secrets.HEARTBEAT_TABLE }}?select=id&limit=1"
+            "${{ secrets.SUPABASE_URL }}/rest/v1/pingdata?select=id&limit=1"
